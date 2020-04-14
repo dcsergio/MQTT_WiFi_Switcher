@@ -38,8 +38,6 @@ void setup() {
   readFS();
   wifiSetup(true);
   connectMQTT();
-  client.subscribe(currentStateTopic, 1);
-  client.subscribe(commandTopic, 1);
   saveConfig();
   Serial.println("local ip");
   Serial.println(WiFi.localIP());
@@ -63,6 +61,8 @@ void connectMQTT() {
       delay(2000);
     }
   }
+  client.subscribe(currentStateTopic, 1);
+  client.subscribe(commandTopic, 1);
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -103,9 +103,9 @@ void saveConfigCallback () {
 }
 
 void switchOn() {
-  digitalWrite(LED_BUILTIN, true);
-  Serial.println("ON status");
   if (stateString != "1") {
+    digitalWrite(LED_BUILTIN, true);
+    Serial.println("ON status");
     stateString = "1";
     publishString(stateString, currentStateTopic);
   }
@@ -120,9 +120,9 @@ void toggle() {
 }
 
 void switchOff() {
-  digitalWrite(LED_BUILTIN, false);
-  Serial.println("OFF status");
   if (stateString != "0") {
+    digitalWrite(LED_BUILTIN, false);
+    Serial.println("OFF status");
     stateString = "0";
     publishString(stateString, currentStateTopic);
   }
@@ -247,12 +247,11 @@ void saveConfig() {
 void loop() {
   if (!client.connected()) {
     connectMQTT();
-    client.subscribe(commandTopic, 1);
     publishString("r", currentStateTopic);
   }
   long gap = millis() - lastSentTime;
   if (gap >= ONE_MINUTE || gap < 0) {
-    Serial.println("gap: " + gap);
+    Serial.println("gap: " + String(gap));
     lastSentTime = millis();
     if (minutes > 0) {
       minutes --;
